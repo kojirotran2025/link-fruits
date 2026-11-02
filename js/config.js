@@ -5,17 +5,17 @@
  * board and the renderer exchange.
  * ------------------------------------------------------------------------- */
 const FRUITS = [
-    { id: 'apple',      name: 'Apple',      src: 'assets/fruits/apple.webp',      tint: '#e8503a' },
+    { id: 'apple',      name: 'Apple',      src: 'assets/fruits/apple.webp?v=2',      tint: '#e8503a' },
     { id: 'orange',     name: 'Orange',     src: 'assets/fruits/orange.webp',     tint: '#f0902c' },
     { id: 'lemon',      name: 'Lemon',      src: 'assets/fruits/lemon.webp',      tint: '#f2c33b' },
     { id: 'grapes',     name: 'Grapes',     src: 'assets/fruits/grapes.webp',     tint: '#7c4d9e' },
-    { id: 'strawberry', name: 'Strawberry', src: 'assets/fruits/strawberry.webp', tint: '#e24b5c' },
+    { id: 'strawberry', name: 'Strawberry', src: 'assets/fruits/strawberry.webp?v=2', tint: '#e24b5c' },
     { id: 'banana',     name: 'Banana',     src: 'assets/fruits/banana.webp',     tint: '#f2c230' },
     { id: 'watermelon', name: 'Watermelon', src: 'assets/fruits/watermelon.webp', tint: '#3f9b55' },
     { id: 'peach',      name: 'Peach',      src: 'assets/fruits/peach.webp',      tint: '#f49a86' },
     { id: 'pineapple',  name: 'Pineapple',  src: 'assets/fruits/pineapple.webp',  tint: '#d9a53b' },
     { id: 'kiwi',       name: 'Kiwi',       src: 'assets/fruits/kiwi.webp',       tint: '#7fa83c' },
-    { id: 'cherry',     name: 'Cherry',     src: 'assets/fruits/cherry.webp',     tint: '#d6323c' },
+    { id: 'cherry',     name: 'Cherry',     src: 'assets/fruits/cherry.webp?v=2',     tint: '#d6323c' },
     { id: 'blueberry',  name: 'Blueberry',  src: 'assets/fruits/blueberry.webp',  tint: '#3b4ba0' },
     { id: 'pear',       name: 'Pear',       src: 'assets/fruits/pear.webp',       tint: '#9bbf3b' },
     { id: 'avocado',    name: 'Avocado',    src: 'assets/fruits/avocado.webp',    tint: '#6e9a3b' },

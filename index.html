@@ -6,13 +6,13 @@
     <meta name="theme-color" content="#f6e6cb">
     <title>Fruit Link — a juicy tile-matching game</title>
     <meta name="description" content="Pair matching fruit stickers, link them with two turns or fewer, and clear the crate before the clock runs out.">
-    <link rel="icon" href="assets/fruits/apple.webp" type="image/webp">
+    <link rel="icon" href="assets/fruits/apple.webp?v=2" type="image/webp">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Gabarito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
 <div class="app">
@@ -30,12 +30,27 @@
             <span class="visually-hidden">Time remaining</span>
         </div>
 
-        <button class="square-btn" id="btn-pause" type="button" aria-label="Pause game" title="Pause (P)">
-            <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-                <rect x="7" y="5" width="3.6" height="14" rx="1.4"></rect>
-                <rect x="13.4" y="5" width="3.6" height="14" rx="1.4"></rect>
-            </svg>
-        </button>
+        <div class="hud__actions">
+            <button class="square-btn" id="btn-sound" type="button" aria-pressed="true" aria-label="Mute sound" title="Mute sound (M)">
+                <svg class="icon-sound-on" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"></path>
+                    <path d="M15.3 8.6a4.8 4.8 0 0 1 0 6.8"></path>
+                    <path d="M18 6a8.4 8.4 0 0 1 0 12"></path>
+                </svg>
+                <svg class="icon-sound-off" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"></path>
+                    <path d="M16 9.5l5 5"></path>
+                    <path d="M21 9.5l-5 5"></path>
+                </svg>
+            </button>
+
+            <button class="square-btn" id="btn-pause" type="button" aria-label="Pause game" title="Pause (P)">
+                <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+                    <rect x="7" y="5" width="3.6" height="14" rx="1.4"></rect>
+                    <rect x="13.4" y="5" width="3.6" height="14" rx="1.4"></rect>
+                </svg>
+            </button>
+        </div>
     </header>
 
     <!-- ── Crate ─────────────────────────────────────────────────────── -->
@@ -84,9 +99,9 @@
         <div class="card card--menu">
             <div class="brand">
                 <div class="brand__art" aria-hidden="true">
-                    <img class="brand__fruit brand__fruit--1" src="assets/fruits/watermelon.webp" alt="">
-                    <img class="brand__fruit brand__fruit--2" src="assets/fruits/apple.webp" alt="">
-                    <img class="brand__fruit brand__fruit--3" src="assets/fruits/strawberry.webp" alt="">
+                    <img class="brand__fruit brand__fruit--1" src="assets/fruits/watermelon.webp?v=2" alt="">
+                    <img class="brand__fruit brand__fruit--2" src="assets/fruits/apple.webp?v=2" alt="">
+                    <img class="brand__fruit brand__fruit--3" src="assets/fruits/strawberry.webp?v=2" alt="">
                 </div>
                 <p class="eyebrow">Crate no. 07 · open daily</p>
                 <h1 class="brand__title" id="menu-title">Fruit Link</h1>
@@ -202,12 +217,13 @@
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
-<script src="js/config.js"></script>
-<script src="js/board.js"></script>
-<script src="js/pathfinder.js"></script>
-<script src="js/renderer.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/game.js"></script>
-<script src="js/main.js"></script>
+<script src="js/config.js?v=2"></script>
+<script src="js/board.js?v=2"></script>
+<script src="js/pathfinder.js?v=2"></script>
+<script src="js/renderer.js?v=2"></script>
+<script src="js/ui.js?v=2"></script>
+<script src="js/audio.js?v=2"></script>
+<script src="js/game.js?v=2"></script>
+<script src="js/main.js?v=2"></script>
 </body>
 </html>

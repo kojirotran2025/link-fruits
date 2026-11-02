@@ -14,6 +14,7 @@ class Game {
         this.pathfinder = new Pathfinder();
         this.renderer = new Renderer(this.canvas);
         this.ui = new UI();
+        this.audio = new AudioManager();
 
         this.state = CONFIG.STATE.MENU;
         this.mode = 1;
@@ -37,6 +38,7 @@ class Game {
         this.renderer.loadImages(FRUITS);
         this._bind();
         this.ui.setBest(this.best);
+        this.ui.setSoundMuted(this.audio.muted);
         this.ui.setActionsEnabled(false);
 
         this._deal();
@@ -102,6 +104,7 @@ class Game {
         this.ui.setActionsEnabled(true);
         this.ui.setScore(0);
         this.ui.setTimer(this.timeLeft, CONFIG.GAME_DURATION);
+        this.audio.startMusic();
     }
 
     /* ── Loop ──────────────────────────────────────────────────────────── */
@@ -163,6 +166,7 @@ class Game {
     _beginPath(a, b, points) {
         this.animPhase = 'path';
         this.pending = { a, b };
+        this.audio.play('link');
         this.renderer.startPath(points);
     }
 
@@ -172,6 +176,7 @@ class Game {
         const pairs = [{ ...a, id }, { ...b, id }];
 
         this.animPhase = 'remove';
+        this.audio.play('match');
         this.renderer.startRemove(pairs);
         this.renderer.burst(pairs);
     }
@@ -228,6 +233,8 @@ class Game {
         }
 
         this.state = won ? CONFIG.STATE.WIN : CONFIG.STATE.GAME_OVER;
+        this.audio.stopMusic();
+        this.audio.play(won ? 'win' : 'lose');
         this.ui.setActionsEnabled(false);
         this.ui.setTimer(this.timeLeft, CONFIG.GAME_DURATION);
 
@@ -259,6 +266,7 @@ class Game {
 
         if (!this.selected) {
             this.selected = cell;
+            this.audio.play('select');
             return;
         }
 
@@ -270,6 +278,7 @@ class Game {
         const firstId = this.board.get(this.selected.row, this.selected.col);
         if (firstId !== id) {
             this.selected = cell;
+            this.audio.play('select');
             return;
         }
 
@@ -280,6 +289,7 @@ class Game {
             this._beginPath(first, cell, path);
         } else {
             // Keep the first tile selected; a shake says "not this one".
+            this.audio.play('invalid');
             this.renderer.shake([this.selected, cell]);
         }
     }
@@ -290,6 +300,7 @@ class Game {
         if (performance.now() < this.introUntil) return;
 
         if (this.timeLeft <= CONFIG.hintCost + 0.5) {
+            this.audio.play('invalid');
             this.ui.toast('Not enough time for a hint');
             return;
         }
@@ -306,6 +317,7 @@ class Game {
         this.hint = pair;
         this.hintExpiry = this.clock + CONFIG.hintDuration;
         this.timeLeft = Math.max(0, this.timeLeft - CONFIG.hintCost);
+        this.audio.play('hint');
         this.ui.setTimer(this.timeLeft, CONFIG.GAME_DURATION);
     }
 
@@ -329,6 +341,7 @@ class Game {
         this.renderer.startFalls([]);
 
         const solved = this.board.shuffle(this.pathfinder);
+        this.audio.play('shuffle');
         this.renderer.startShuffle(CONFIG.animShuffle);
 
         this.state = CONFIG.STATE.SHUFFLE;
@@ -360,17 +373,27 @@ class Game {
     _togglePause() {
         if (this.state === CONFIG.STATE.PLAYING) {
             this.state = CONFIG.STATE.PAUSED;
+            this.audio.pauseMusic();
+            this.audio.play('pause');
             this.ui.setActionsEnabled(false);
             this.ui.show('pause');
         } else if (this.state === CONFIG.STATE.PAUSED) {
             this.state = CONFIG.STATE.PLAYING;
+            this.audio.resumeMusic();
+            this.audio.play('resume');
             this.ui.show(null);
             this.ui.setActionsEnabled(true);
         }
     }
 
+    _toggleSound() {
+        const muted = this.audio.toggle();
+        this.ui.setSoundMuted(muted);
+    }
+
     _showMenu() {
         this.state = CONFIG.STATE.MENU;
+        this.audio.stopMusic();
         this.score = 0;
         this.timeLeft = CONFIG.GAME_DURATION;
         this.clock = 0;
@@ -424,6 +447,7 @@ class Game {
         document.getElementById('btn-resume').addEventListener('click', () => this._togglePause());
         document.getElementById('btn-hint').addEventListener('click', () => this._useHint());
         document.getElementById('btn-shuffle').addEventListener('click', () => this._startShuffle(true));
+        document.getElementById('btn-sound').addEventListener('click', () => this._toggleSound());
 
         document.querySelectorAll('[data-action="menu"]').forEach(button => {
             button.addEventListener('click', () => this._showMenu());
@@ -437,6 +461,7 @@ class Game {
                     other.classList.toggle('is-active', active);
                     other.setAttribute('aria-pressed', String(active));
                 });
+                this.audio.play('click');
                 this.ui.setMode(CONFIG.MODES[this.mode].label);
                 if (this.state === CONFIG.STATE.MENU) this._deal();
             });
@@ -444,6 +469,13 @@ class Game {
 
         window.addEventListener('keydown', event => {
             const key = event.key.toLowerCase();
+            if (key === 'm') {
+                if (!event.repeat) {
+                    event.preventDefault();
+                    this._toggleSound();
+                }
+                return;
+            }
             if (key === 'escape' || key === 'p') {
                 if (this.state === CONFIG.STATE.PLAYING || this.state === CONFIG.STATE.PAUSED) {
                     event.preventDefault();

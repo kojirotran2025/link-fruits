@@ -22,6 +22,7 @@ class UI {
         this.toasts = document.getElementById('toasts');
         this.hintButton = document.getElementById('btn-hint');
         this.shuffleButton = document.getElementById('btn-shuffle');
+        this.soundButton = document.getElementById('btn-sound');
         this.confettiBox = document.getElementById('confetti');
 
         this.lastScore = 0;
@@ -119,6 +120,14 @@ class UI {
     setBest(best) {
         const menu = document.getElementById('best-menu');
         if (menu) menu.textContent = best;
+    }
+
+    setSoundMuted(muted) {
+        if (!this.soundButton) return;
+        this.soundButton.classList.toggle('is-muted', muted);
+        this.soundButton.setAttribute('aria-pressed', String(!muted));
+        this.soundButton.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound');
+        this.soundButton.title = muted ? 'Unmute sound (M)' : 'Mute sound (M)';
     }
 
     /* ── Feedback ──────────────────────────────────────────────────────── */
