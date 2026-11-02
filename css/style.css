@@ -126,11 +126,13 @@ img {
 
 /* ── HUD ─────────────────────────────────────────────────────────────────── */
 .hud {
+    --hud-pad-x: 14px;
+    position: relative;
     flex: 0 0 auto;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: calc(10px + var(--safe-top)) 14px 8px;
+    padding: calc(10px + var(--safe-top)) var(--hud-pad-x) 16px;
 }
 
 .hud__actions {
@@ -273,6 +275,92 @@ img {
 @keyframes tick-pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.10); color: var(--tomato-dark); }
+}
+
+/* ── Chain fuse ──────────────────────────────────────────────────────────── */
+/* Drains over CONFIG.comboWindow. The right edge is the burning tip, so the
+   bar reads as a fuse being eaten rather than a meter running out. */
+.chain-meter {
+    position: absolute;
+    left: var(--hud-pad-x, 14px);
+    right: var(--hud-pad-x, 14px);
+    bottom: 4px;
+    height: 9px;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.chain-meter.is-out {
+    opacity: 0;
+    transform: scaleY(0.35);
+}
+
+.chain-meter__track {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: #e9cda0;
+    box-shadow: inset 0 1px 2px rgba(120, 74, 32, 0.3),
+                0 0 var(--glow, 0) rgba(242, 178, 51, 0.6);
+}
+
+.chain-meter__fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--p, 1) * 100%);
+    background: linear-gradient(90deg, #8c2317, var(--tomato-dark) 28%, var(--tomato) 60%, var(--mustard) 86%, #ffe9a8);
+}
+
+/* Hot cap on the tip. Clipped by the track, so it looks like a flame licking
+   the rail instead of a ball sitting on top of it. */
+.chain-meter__fill::before {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff8dc 0 26%, rgba(255, 224, 128, 0.9) 44%, rgba(232, 80, 58, 0.4) 66%, transparent 71%);
+    animation: tip-flare 0.2s ease-in-out infinite alternate;
+}
+
+/* Shimmering heat streaks across the burning part. */
+.chain-meter__fill::after {
+    content: '';
+    position: absolute;
+    inset: -2px -8px;
+    background: repeating-linear-gradient(118deg, rgba(255, 240, 190, 0.5) 0 2px, rgba(255, 214, 120, 0) 2px 6px);
+    mix-blend-mode: screen;
+    animation: fuse-flicker 0.24s steps(2, end) infinite;
+}
+
+@keyframes tip-flare {
+    from { transform: scale(0.8); opacity: 0.85; }
+    to { transform: scale(1.15); opacity: 1; }
+}
+
+@keyframes fuse-flicker {
+    0% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(-3px, 1px, 0); }
+    100% { transform: translate3d(2px, -1px, 0); }
+}
+
+/* The fire gets hotter as the ladder climbs. */
+.chain-meter[data-heat='2'] { --glow: 5px; }
+.chain-meter[data-heat='3'] { --glow: 8px; }
+.chain-meter[data-heat='4'] { --glow: 11px; }
+.chain-meter[data-heat='5'] { --glow: 14px; }
+
+.chain-meter[data-heat='4'] .chain-meter__fill,
+.chain-meter[data-heat='5'] .chain-meter__fill {
+    background: linear-gradient(90deg, #b73323, var(--tomato) 32%, var(--mustard) 64%, #fff3c4 90%, #fffdf2);
+}
+
+.chain-meter[data-heat='5'] .chain-meter__fill::after {
+    animation-duration: 0.14s;
 }
 
 .square-btn {
@@ -1061,8 +1149,14 @@ img {
 
     .hud {
         grid-area: hud;
-        padding: calc(6px + var(--safe-top)) 12px 4px;
+        --hud-pad-x: 12px;
+        padding: calc(6px + var(--safe-top)) var(--hud-pad-x) 12px;
         gap: 8px;
+    }
+
+    .chain-meter {
+        bottom: 2px;
+        height: 8px;
     }
 
     .stage {
@@ -1261,7 +1355,8 @@ img {
 /* ── Responsive: tablets & up ────────────────────────────────────────────── */
 @media (min-width: 700px) {
     .hud {
-        padding: calc(14px + var(--safe-top)) 22px 10px;
+        --hud-pad-x: 22px;
+        padding: calc(14px + var(--safe-top)) var(--hud-pad-x) 18px;
         gap: 16px;
     }
 
@@ -1351,9 +1446,8 @@ img {
 /* ── Narrow phones ───────────────────────────────────────────────────────── */
 @media (max-width: 380px) {
     .hud {
+        --hud-pad-x: 10px;
         gap: 7px;
-        padding-left: 10px;
-        padding-right: 10px;
     }
 
     .hud__actions {
@@ -1428,6 +1522,13 @@ img {
 
 /* ── Short landscape: compact two-column menu ────────────────────────────── */
 @media (orientation: landscape) and (max-height: 600px) {
+    /* Re-asserted after the min-width rules so the fuse band stays shallow and
+       the board keeps whatever height it can get. */
+    .hud {
+        --hud-pad-x: 12px;
+        padding: calc(6px + var(--safe-top)) var(--hud-pad-x) 12px;
+    }
+
     .screen {
         max-width: 780px;
         padding: 0;

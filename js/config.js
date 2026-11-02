@@ -40,8 +40,9 @@ const CONFIG = Object.freeze({
     hintDuration: 4,             // seconds a hint stays lit
 
     // Combo ladder: a link made within comboWindow of the previous one climbs
-    // the multiplier table, and the match chime climbs with it.
-    comboWindow: 2.6,
+    // the multiplier table, and the match chime climbs with it. The fuse meter
+    // in the HUD drains over this same window.
+    comboWindow: 3,
     comboMultipliers: [1, 2, 3, 5, 8],
     comboDetune: [0, 2, 4, 7, 9],  // semitones added to the match chime per step
 

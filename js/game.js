@@ -154,6 +154,10 @@ class Game {
 
         if (this.chain > 0 && this.clock - this.lastLinkAt > CONFIG.comboWindow) this._breakChain();
 
+        const heat = this.chain > 0 ? Math.min(this.chain, CONFIG.comboMultipliers.length) : 0;
+        const fuse = heat > 0 ? (CONFIG.comboWindow - (this.clock - this.lastLinkAt)) / CONFIG.comboWindow : 0;
+        this.ui.setChainMeter(fuse, heat);
+
         if (this.hint && this.clock >= this.hintExpiry) this._clearHint();
 
         if (this.animPhase === 'path' && this.renderer.animDone()) {
@@ -202,6 +206,7 @@ class Game {
         this.chain = 0;
         this.lastLinkAt = 0;
         this.ui.setChain(0, 1);
+        this.ui.setChainMeter(0, 0);
     }
 
     _resetChain() {
