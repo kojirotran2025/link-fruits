@@ -141,6 +141,7 @@ img {
 }
 
 .score-tag {
+    position: relative;
     flex: 0 0 auto;
     display: flex;
     flex-direction: column;
@@ -152,6 +153,36 @@ img {
     border-radius: 13px;
     box-shadow: 0 3px 0 var(--ink);
     transform: rotate(-1.4deg);
+}
+
+.chain-pip {
+    position: absolute;
+    top: -3px;
+    right: -9px;
+    display: grid;
+    place-items: center;
+    min-width: 30px;
+    padding: 0 5px 1px;
+    border: 2.5px solid var(--ink);
+    border-radius: 11px;
+    background: var(--tomato);
+    color: #fffaf0;
+    box-shadow: 0 2px 0 var(--ink);
+    transform: rotate(7deg);
+}
+
+.chain-pip.is-hidden {
+    display: none;
+}
+
+.chain-pip strong {
+    font-family: var(--font-display);
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+.chain-pip.is-bumped strong {
+    animation: score-bump 0.3s cubic-bezier(0.2, 1.6, 0.4, 1);
 }
 
 .score-tag__label {
@@ -830,6 +861,43 @@ img {
     color: var(--leaf);
 }
 
+/* Run summary on the end cards: cleared %, longest chain, gap to best. */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.stats li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 5px 4px 6px;
+    border: 2px dashed rgba(43, 26, 18, 0.26);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.34);
+}
+
+.stats span {
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+.stats strong {
+    font-family: var(--font-display);
+    font-size: 17px;
+    line-height: 1.1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
 /* ── Stamps ──────────────────────────────────────────────────────────────── */
 .stamp {
     position: relative;
@@ -961,6 +1029,15 @@ img {
     box-shadow: 0 3px 0 var(--ink);
     pointer-events: none;
     animation: pop-float 1.15s ease-out forwards;
+}
+
+.score-pop__mult {
+    margin-left: 6px;
+    padding: 0 5px 1px;
+    border-radius: 8px;
+    background: var(--tomato);
+    color: #fffaf0;
+    font-size: 14px;
 }
 
 @keyframes pop-float {

@@ -15,6 +15,8 @@ class UI {
 
         this.scoreTag = document.querySelector('.score-tag');
         this.scoreValue = document.getElementById('score-value');
+        this.chainPip = document.getElementById('chain-pip');
+        this.chainValue = document.getElementById('chain-value');
         this.timer = document.getElementById('timer');
         this.timerFill = document.getElementById('timer-fill');
         this.timerText = document.getElementById('timer-text');
@@ -52,22 +54,52 @@ class UI {
         screen.classList.remove('is-hidden');
 
         if (name === 'menu') {
-            document.getElementById('best-menu').textContent = data.best ?? 0;
+            this.setBest(data.best);
             this._focusPrimary(screen, 'btn-play');
         } else if (name === 'over') {
             document.getElementById('over-score').textContent = data.score ?? 0;
+            document.getElementById('over-cleared').textContent = `${data.clearedPct ?? 0}%`;
+            document.getElementById('over-chain').textContent = this._chainText(data);
+            document.getElementById('over-gap').textContent = this._gapText(data);
             document.getElementById('over-best').textContent = `Best ${data.best ?? 0}`;
+            document.getElementById('over-note').textContent = this._overNote(data);
             this._focusPrimary(screen, 'btn-retry');
         } else if (name === 'win') {
             document.getElementById('win-score').textContent = data.score ?? 0;
             document.getElementById('win-bonus').textContent =
                 data.bonus ? `+${data.bonus} time bonus` : 'Perfect clear';
+            document.getElementById('win-cleared').textContent = `${data.clearedPct ?? 100}%`;
+            document.getElementById('win-chain').textContent = this._chainText(data);
+            document.getElementById('win-gap').textContent = this._gapText(data);
             document.getElementById('win-best').textContent = `Best ${data.best ?? 0}`;
             this._focusPrimary(screen, 'btn-win-again');
             this._confetti();
         } else if (name === 'pause') {
             this._focusPrimary(screen, 'btn-resume');
         }
+    }
+
+    /** Score delta against the record the player started the run with. */
+    _gapText(data) {
+        const previous = data.previousBest ?? 0;
+        if ((data.score ?? 0) > previous) return 'New best!';
+        if (!previous) return 'First crate';
+        return `−${previous - (data.score ?? 0)}`;
+    }
+
+    _overNote(data) {
+        const cleared = data.clearedPct ?? 0;
+        if (cleared >= 80) return `So close — ${data.left ?? 0} tiles left.`;
+        if (cleared >= 40) {
+            const previous = data.bestClearedPct ?? 0;
+            return previous ? `Good crate. Your best was ${previous}%.` : 'Good crate.';
+        }
+        return 'The crate wins this round.';
+    }
+
+    /** A run with no matches has no ladder to show. */
+    _chainText(data) {
+        return data.chain > 0 ? `×${data.chain}` : '—';
     }
 
     _focusPrimary(screen, id) {
@@ -117,9 +149,25 @@ class UI {
         }
     }
 
-    setBest(best) {
+    setBest(record) {
+        const best = record || { score: 0, chain: 0 };
         const menu = document.getElementById('best-menu');
-        if (menu) menu.textContent = best;
+        if (menu) menu.textContent = best.score;
+        const chain = document.getElementById('best-chain');
+        if (chain) chain.textContent = best.chain > 0 ? `×${best.chain}` : '—';
+    }
+
+    /** The chain badge only speaks from ×2 up; ×1 is just a normal match. */
+    setChain(chain, mult) {
+        if (!this.chainPip) return;
+        const visible = chain >= 2;
+        this.chainPip.classList.toggle('is-hidden', !visible);
+        if (!visible) return;
+
+        this.chainValue.textContent = `×${mult}`;
+        this.chainPip.classList.remove('is-bumped');
+        void this.chainPip.offsetWidth;
+        this.chainPip.classList.add('is-bumped');
     }
 
     setSoundMuted(muted) {
@@ -132,10 +180,18 @@ class UI {
 
     /* ── Feedback ──────────────────────────────────────────────────────── */
 
-    popScore(x, y, points) {
+    popScore(x, y, points, mult = 1) {
         const popup = document.createElement('div');
         popup.className = 'score-pop';
         popup.textContent = `+${points}`;
+
+        if (mult > 1) {
+            const badge = document.createElement('span');
+            badge.className = 'score-pop__mult';
+            badge.textContent = `×${mult}`;
+            popup.appendChild(badge);
+        }
+
         popup.style.left = `${x}px`;
         popup.style.top = `${y}px`;
         document.body.appendChild(popup);

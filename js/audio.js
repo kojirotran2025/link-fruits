@@ -255,7 +255,7 @@ class AudioManager {
 
     /* ── Sound effects ─────────────────────────────────────────────────── */
 
-    play(name) {
+    play(name, options = {}) {
         if (!this._ensure()) return;
         const time = this.ctx.currentTime + 0.005;
 
@@ -267,9 +267,12 @@ class AudioManager {
                 this._tone(330, 990, 0.16, 'triangle', 0.045, time);
                 break;
             case 'match': {
+                // A climbing chain lifts the chime in pitch instead of volume.
+                const shift = Math.pow(2, (options.semitones || 0) / 12);
                 const notes = [659.25, 830.61, 987.77, 1318.51];
                 notes.forEach((freq, index) => {
-                    this._tone(freq, freq, 0.22, 'triangle', 0.075 - index * 0.008, time + index * 0.055);
+                    const lifted = freq * shift;
+                    this._tone(lifted, lifted, 0.22, 'triangle', 0.075 - index * 0.008, time + index * 0.055);
                 });
                 this._noiseBurst(time, 0.05, 0.035, 3200);
                 break;

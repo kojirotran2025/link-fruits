@@ -39,6 +39,12 @@ const CONFIG = Object.freeze({
     shuffleCost: 30,
     hintDuration: 4,             // seconds a hint stays lit
 
+    // Combo ladder: a link made within comboWindow of the previous one climbs
+    // the multiplier table, and the match chime climbs with it.
+    comboWindow: 2.6,
+    comboMultipliers: [1, 2, 3, 5, 8],
+    comboDetune: [0, 2, 4, 7, 9],  // semitones added to the match chime per step
+
     animPath: 0.30,
     animRemove: 0.24,
     animShuffle: 0.50,
@@ -53,7 +59,7 @@ const CONFIG = Object.freeze({
     gapRatio: 0.10,
     padRatio: 0.42,
 
-    storageKey: 'fruit-link-best-v1',
+    storageKey: 'fruit-link-best-v2',   // { score, clearedPct, chain }
 
     STATE: Object.freeze({
         MENU: 'menu',

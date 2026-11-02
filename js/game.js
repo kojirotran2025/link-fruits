@@ -23,6 +23,11 @@ class Game {
         this.timeLeft = CONFIG.GAME_DURATION;
         this.clock = 0;
 
+        this.chain = 0;
+        this.lastLinkAt = 0;
+        this.longestChain = 0;
+        this.startTiles = 0;
+
         this.selected = null;
         this.hint = null;
         this.hintExpiry = 0;
@@ -89,6 +94,9 @@ class Game {
         this.pending = null;
         this.introUntil = performance.now() + 500;
 
+        this.startTiles = this.board.remaining();
+        this._resetChain();
+
         this.ui.setMode(CONFIG.MODES[this.mode].label);
     }
 
@@ -144,6 +152,8 @@ class Game {
 
         this.ui.setTimer(this.timeLeft, CONFIG.GAME_DURATION);
 
+        if (this.chain > 0 && this.clock - this.lastLinkAt > CONFIG.comboWindow) this._breakChain();
+
         if (this.hint && this.clock >= this.hintExpiry) this._clearHint();
 
         if (this.animPhase === 'path' && this.renderer.animDone()) {
@@ -165,9 +175,38 @@ class Game {
 
     _beginPath(a, b, points) {
         this.animPhase = 'path';
-        this.pending = { a, b };
+        this.pending = { a, b, ...this._climbChain() };
         this.audio.play('link');
         this.renderer.startPath(points);
+    }
+
+    /** A link inside the combo window climbs the ladder; the chime climbs with it. */
+    _climbChain() {
+        const within = this.chain > 0 && this.clock - this.lastLinkAt <= CONFIG.comboWindow;
+        this.chain = within ? this.chain + 1 : 1;
+        this.lastLinkAt = this.clock;
+        this.longestChain = Math.max(this.longestChain, this.chain);
+
+        const index = Math.min(this.chain, CONFIG.comboMultipliers.length) - 1;
+        const step = {
+            mult: CONFIG.comboMultipliers[index],
+            semitones: CONFIG.comboDetune[index],
+        };
+
+        this.ui.setChain(this.chain, step.mult);
+        return step;
+    }
+
+    /** Drop the ladder without touching the run's record chain length. */
+    _breakChain() {
+        this.chain = 0;
+        this.lastLinkAt = 0;
+        this.ui.setChain(0, 1);
+    }
+
+    _resetChain() {
+        this._breakChain();
+        this.longestChain = 0;
     }
 
     _beginRemove() {
@@ -176,13 +215,13 @@ class Game {
         const pairs = [{ ...a, id }, { ...b, id }];
 
         this.animPhase = 'remove';
-        this.audio.play('match');
+        this.audio.play('match', { semitones: this.pending.semitones });
         this.renderer.startRemove(pairs);
         this.renderer.burst(pairs);
     }
 
     _completeRemove() {
-        const { a, b } = this.pending;
+        const { a, b, mult } = this.pending;
         const moves = this.board.removePair(a, b);
 
         this.renderer.cancelAnim();
@@ -191,7 +230,7 @@ class Game {
         this.pending = null;
 
         const bonus = Math.floor(this.timeLeft) * CONFIG.timeBonus;
-        const earned = CONFIG.baseScore + bonus;
+        const earned = Math.round((CONFIG.baseScore + bonus) * mult);
         this.score += earned;
         this.ui.setScore(this.score);
 
@@ -199,7 +238,7 @@ class Game {
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = rect.width / this.renderer.geo.width;
         const scaleY = rect.height / this.renderer.geo.height;
-        this.ui.popScore(rect.left + mid.x * scaleX, rect.top + mid.y * scaleY, earned);
+        this.ui.popScore(rect.left + mid.x * scaleX, rect.top + mid.y * scaleY, earned, mult);
 
         if (this.board.remaining() === 0) {
             this._finishGame(true);
@@ -217,6 +256,7 @@ class Game {
         this.pending = null;
         this.selected = null;
         this._clearHint();
+        this._breakChain();
         this.renderer.cancelAnim();
         this.renderer.startFalls([]);
 
@@ -227,8 +267,18 @@ class Game {
             this.ui.setScore(this.score);
         }
 
-        if (this.score > this.best) {
-            this.best = this.score;
+        const clearedPct = this.startTiles
+            ? Math.round(100 * (this.startTiles - this.board.remaining()) / this.startTiles)
+            : 0;
+        const previousBest = this.best.score;
+        const previousClearedPct = this.best.clearedPct;
+
+        if (this.score > previousBest || this.longestChain > this.best.chain) {
+            this.best = {
+                score: Math.max(this.score, previousBest),
+                clearedPct: this.score > previousBest ? clearedPct : this.best.clearedPct,
+                chain: Math.max(this.longestChain, this.best.chain),
+            };
             this._writeBest();
         }
 
@@ -238,11 +288,18 @@ class Game {
         this.ui.setActionsEnabled(false);
         this.ui.setTimer(this.timeLeft, CONFIG.GAME_DURATION);
 
-        if (won) {
-            this.ui.show('win', { score: this.score, bonus, best: this.best });
-        } else {
-            this.ui.show('over', { score: this.score, best: this.best });
-        }
+        const stats = {
+            score: this.score,
+            bonus,
+            best: this.best.score,
+            previousBest,
+            clearedPct,
+            left: this.board.remaining(),
+            chain: this.longestChain,
+            bestClearedPct: previousClearedPct,
+        };
+
+        this.ui.show(won ? 'win' : 'over', stats);
     }
 
     /* ── Player actions ────────────────────────────────────────────────── */
@@ -289,6 +346,7 @@ class Game {
             this._beginPath(first, cell, path);
         } else {
             // Keep the first tile selected; a shake says "not this one".
+            this._breakChain();
             this.audio.play('invalid');
             this.renderer.shake([this.selected, cell]);
         }
@@ -335,6 +393,7 @@ class Game {
 
         this.selected = null;
         this._clearHint();
+        this._breakChain();
         this.animPhase = 'idle';
         this.pending = null;
         this.renderer.cancelAnim();
@@ -420,16 +479,21 @@ class Game {
 
     _readBest() {
         try {
-            const raw = Number(localStorage.getItem(CONFIG.storageKey));
-            return Number.isFinite(raw) && raw > 0 ? raw : 0;
+            const raw = JSON.parse(localStorage.getItem(CONFIG.storageKey) || '{}');
+            return {
+                score: Number(raw.score) || 0,
+                clearedPct: Number(raw.clearedPct) || 0,
+                chain: Number(raw.chain) || 0,
+            };
         } catch (error) {
-            return 0;
+            /* Storage may be unavailable (private mode / file://). */
+            return { score: 0, clearedPct: 0, chain: 0 };
         }
     }
 
     _writeBest() {
         try {
-            localStorage.setItem(CONFIG.storageKey, String(this.best));
+            localStorage.setItem(CONFIG.storageKey, JSON.stringify(this.best));
         } catch (error) {
             /* Storage may be unavailable (private mode / file://); scores still work. */
         }
