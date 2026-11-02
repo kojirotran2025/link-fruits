@@ -892,10 +892,11 @@ img {
 
 .stats strong {
     font-family: var(--font-display);
-    font-size: 17px;
+    font-size: clamp(12px, 4.4vw, 17px);
     line-height: 1.1;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 /* ── Stamps ──────────────────────────────────────────────────────────────── */
