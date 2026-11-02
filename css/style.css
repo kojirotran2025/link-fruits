@@ -279,13 +279,18 @@ img {
 
 /* ── Chain fuse ──────────────────────────────────────────────────────────── */
 /* Drains over CONFIG.comboWindow. The right edge is the burning tip, so the
-   bar reads as a fuse being eaten rather than a meter running out. */
+   bar reads as a fuse being eaten rather than a meter running out. On phones it
+   lives in the band under the HUD row; from 700px wide it joins the row itself,
+   to the right of the buttons, next to the chain count. */
 .chain-meter {
     position: absolute;
     left: var(--hud-pad-x, 14px);
     right: var(--hud-pad-x, 14px);
-    bottom: 4px;
-    height: 9px;
+    bottom: 3px;
+    height: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
@@ -294,9 +299,15 @@ img {
     transform: scaleY(0.35);
 }
 
+.chain-meter.is-out .chain-meter__count {
+    visibility: hidden;
+}
+
 .chain-meter__track {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    flex: 1 1 auto;
+    height: var(--rail, 100%);
+    min-width: 0;
     overflow: hidden;
     border: 2px solid var(--ink);
     border-radius: 999px;
@@ -305,10 +316,20 @@ img {
                 0 0 var(--glow, 0) rgba(242, 178, 51, 0.6);
 }
 
+.chain-meter__count {
+    flex: 0 0 auto;
+    font-family: var(--font-display);
+    font-size: 13px;
+    line-height: 1;
+    color: var(--ink);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    font-variant-numeric: tabular-nums;
+}
+
 .chain-meter__fill {
     position: absolute;
     inset: 0 auto 0 0;
-    width: calc(var(--p, 1) * 100%);
+    width: calc(var(--p, 0) * 100%);
     background: linear-gradient(90deg, #8c2317, var(--tomato-dark) 28%, var(--tomato) 60%, var(--mustard) 86%, #ffe9a8);
 }
 
@@ -1156,7 +1177,12 @@ img {
 
     .chain-meter {
         bottom: 2px;
-        height: 8px;
+        height: 9px;
+        gap: 5px;
+    }
+
+    .chain-meter__count {
+        font-size: 12px;
     }
 
     .stage {
@@ -1356,8 +1382,29 @@ img {
 @media (min-width: 700px) {
     .hud {
         --hud-pad-x: 22px;
-        padding: calc(14px + var(--safe-top)) var(--hud-pad-x) 18px;
+        padding: calc(14px + var(--safe-top)) var(--hud-pad-x) 10px;
         gap: 16px;
+    }
+
+    /* Roomy enough that the fuse joins the row instead of needing its own band. */
+    .chain-meter {
+        position: static;
+        height: 50px;
+        flex: 1 1 210px;
+        max-width: 340px;
+        gap: 10px;
+        --rail: 18px;
+    }
+
+    /* Here the rail is a permanent part of the row, so an unlit fuse stays as an
+       empty track rather than vanishing and dragging the row's width with it. */
+    .chain-meter.is-out {
+        opacity: 1;
+        transform: none;
+    }
+
+    .chain-meter__count {
+        font-size: 24px;
     }
 
     .score-tag {
@@ -1522,11 +1569,15 @@ img {
 
 /* ── Short landscape: compact two-column menu ────────────────────────────── */
 @media (orientation: landscape) and (max-height: 600px) {
-    /* Re-asserted after the min-width rules so the fuse band stays shallow and
-       the board keeps whatever height it can get. */
+    /* Re-asserted after the min-width rules so the shallow top bar wins, while
+       padding-bottom falls through to whichever layout is active: 12px keeps the
+       fuse band on landscape phones, 10px from the tablet rules frees the board
+       its height once the fuse moves into the row. */
     .hud {
         --hud-pad-x: 12px;
-        padding: calc(6px + var(--safe-top)) var(--hud-pad-x) 12px;
+        padding-top: calc(6px + var(--safe-top));
+        padding-left: var(--hud-pad-x);
+        padding-right: var(--hud-pad-x);
     }
 
     .screen {

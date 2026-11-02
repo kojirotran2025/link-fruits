@@ -156,7 +156,7 @@ class Game {
 
         const heat = this.chain > 0 ? Math.min(this.chain, CONFIG.comboMultipliers.length) : 0;
         const fuse = heat > 0 ? (CONFIG.comboWindow - (this.clock - this.lastLinkAt)) / CONFIG.comboWindow : 0;
-        this.ui.setChainMeter(fuse, heat);
+        this.ui.setChainMeter(fuse, heat, this.chain);
 
         if (this.hint && this.clock >= this.hintExpiry) this._clearHint();
 
@@ -206,7 +206,7 @@ class Game {
         this.chain = 0;
         this.lastLinkAt = 0;
         this.ui.setChain(0, 1);
-        this.ui.setChainMeter(0, 0);
+        this.ui.setChainMeter(0, 0, 0);
     }
 
     _resetChain() {

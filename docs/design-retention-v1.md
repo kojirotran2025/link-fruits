@@ -39,7 +39,7 @@ survives a session is one number. The four features below fix that in order of c
 
 ## F1 — Combo ladder (makes a single run accelerate)
 
-**Rule.** A match that completes within **3 s** of the previous match's completion raises the
+**Rule.** A match that completes within **4 s** of the previous match's completion raises the
 chain by 1. The chain is the multiplier applied to that pair's score.
 
 | Chain | Multiplier | Match SFX pitch |
@@ -56,23 +56,25 @@ chain by 1. The chain is the multiplier applied to that pair's score.
 
 | Event | Chain |
 | --- | --- |
-| Timeout (> 3 s between matches) | reset to 0 |
+| Timeout (> 4 s between matches) | reset to 0 |
 | `invalid` tap (unconnectable pair) | reset to 0 |
 | Shuffle (paid or deadlock) | reset to 0 |
 | Pause | **frozen**, not reset (locked) |
 | Hint used | kept — hint costs time, not rhythm |
 
-**Why 3 s.** A path animation is 0.30 s and a remove is 0.24 s (`js/config.js`), so a confident
-player clears a pair in roughly 1.2–2.0 s including the search. The window shipped at 2.6 s and the
-user asked for more room on 2026-11-02, so it is 3 s: still a flow reward, but a slightly harder
-search no longer costs the ladder.
+**Why 4 s.** A path animation is 0.30 s and a remove is 0.24 s (`js/config.js`), so a confident
+player clears a pair in roughly 1.2–2.0 s including the search. The window shipped at 2.6 s, went to
+3 s and then to 4 s on 2026-11-02 as the user asked for more room: at 4 s the ladder rewards knowing
+where the next pair is, and only a genuinely lost search costs the multiplier.
 
 **Feedback.** `×2!` text at the pair midpoint via the existing `ui.popScore` lane, a chain pip
 next to the score tag, a rising match pitch from `js/audio.js` (`play('match', { semitones })`), and
-a **fuse meter** in the HUD band below the timer — a thin rail that burns down from the right, its
-glowing tip travelling back toward the left as the window empties, flickering and glowing hotter as
-the ladder climbs. The fuse is lit from chain 1, so
-the player sees the window open before the first multiplier lands.
+a **fuse bar** — a rail that burns down from the right, its glowing tip travelling back toward the
+left as the window empties, flickering and glowing hotter as the ladder climbs, with the current
+**chain count** standing at its right end. From 700px wide the fuse sits in the HUD row itself, to
+the right of the sound and pause buttons, and stays visible as an empty track when the chain is out;
+on phones it keeps the thin band under the row and fades away entirely. The fuse is lit from chain 1,
+so the player sees the window open before the first multiplier lands.
 
 **Locked.** Cap ×8. Pause freezes the chain (the combo clock is game time, so it stops with the
 timer). Records re-baseline: new bests live in `fruit-link-best-v2` as

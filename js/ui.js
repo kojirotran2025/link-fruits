@@ -18,6 +18,7 @@ class UI {
         this.chainPip = document.getElementById('chain-pip');
         this.chainValue = document.getElementById('chain-value');
         this.chainMeter = document.getElementById('chain-meter');
+        this.chainCount = document.getElementById('chain-count');
         this.timer = document.getElementById('timer');
         this.timerFill = document.getElementById('timer-fill');
         this.timerText = document.getElementById('timer-text');
@@ -30,9 +31,10 @@ class UI {
 
         this.lastScore = 0;
         this.lastTimeLabel = '';
-        this.chainMeterP = 1;
+        this.chainMeterP = 0;
         this.chainMeterHeat = 0;
         this.chainMeterLit = false;
+        this.chainCountText = '';
         this.reduced = window.matchMedia
             ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
             : false;
@@ -175,7 +177,7 @@ class UI {
     }
 
     /** Drain the fuse; `heat` is the ladder step, so the fire climbs with it. */
-    setChainMeter(fraction, heat) {
+    setChainMeter(fraction, heat, chain) {
         if (!this.chainMeter) return;
         const lit = heat > 0 && fraction > 0;
 
@@ -184,10 +186,20 @@ class UI {
             this.chainMeter.classList.toggle('is-out', !lit);
         }
 
+        const text = String(chain);
+        if (text !== this.chainCountText) {
+            this.chainCountText = text;
+            this.chainCount.textContent = text;
+        }
+
         if (!lit) {
             if (this.chainMeterHeat !== 0) {
                 this.chainMeterHeat = 0;
                 delete this.chainMeter.dataset.heat;
+            }
+            if (this.chainMeterP !== 0) {
+                this.chainMeterP = 0;
+                this.chainMeter.style.setProperty('--p', '0');
             }
             return;
         }
