@@ -1,0 +1,10 @@
+# Local QA captures
+qa/
+
+# Large generation sources; the published game only needs assets/fruits
+vibe_images/
+assets/raw/
+
+# OS clutter
+.DS_Store
+Thumbs.db
